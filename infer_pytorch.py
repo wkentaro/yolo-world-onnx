@@ -17,11 +17,13 @@ from mmengine.config import ConfigDict
 here = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.insert(0, os.path.join(here, "src/YOLO-World/deploy"))
-from easydeploy.model import DeployModel  # noqa: E402
-from easydeploy.model import MMYOLOBackend  # noqa: E402
+import easydeploy.model  # noqa: E402
 
 
-def load_model() -> Tuple[torch.nn.Module, int]:
+def load_model(deploy_model_cls=None) -> Tuple[torch.nn.Module, int]:
+    if deploy_model_cls is None:
+        deploy_model_cls = easydeploy.model.DeployModel
+
     config = "configs/pretrain/yolo_world_v2_xl_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.py"  # noqa: E501
     checkpoint = "yolo_world_v2_xl_obj365v1_goldg_cc3mlite_pretrain-5daf1395.pth"
     logger.info("Loading model: config={!r}, checkpoint={!r}", config, checkpoint)
@@ -29,9 +31,9 @@ def load_model() -> Tuple[torch.nn.Module, int]:
     base_model = init_detector(config=config, checkpoint=checkpoint, device="cpu")
     os.chdir(here)
 
-    model = DeployModel(
+    model = deploy_model_cls(
         baseModel=base_model,
-        backend=MMYOLOBackend.ONNXRUNTIME,
+        backend=easydeploy.model.MMYOLOBackend.ONNXRUNTIME,
         postprocess_cfg=ConfigDict(
             pre_top_k=1000,
             keep_top_k=100,
