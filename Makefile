@@ -10,9 +10,10 @@ install_yolo_world: install_miniforge
 	@Makefile.scripts/install_yolo_world.sh
 
 lint:
-	@ruff check
-	@ruff format --diff
+	ruff check
+	ruff format --diff
+	mypy infer_pytorch.py export_onnx_reparameterized.py
 
 format:
-	@ruff check --fix
-	@ruff format
+	ruff check --fix
+	ruff format
