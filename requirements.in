@@ -5,3 +5,4 @@ onnx
 onnxruntime
 onnxsim
 ruff
+openai-clip
