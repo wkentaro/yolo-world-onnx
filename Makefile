@@ -12,7 +12,7 @@ install_yolo_world: install_miniforge
 lint:
 	ruff check
 	ruff format --diff
-	mypy infer_pytorch.py export_onnx_reparameterized.py
+	mypy infer_*.py export_*.py
 
 format:
 	ruff check --fix
