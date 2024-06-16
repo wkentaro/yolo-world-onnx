@@ -8,3 +8,11 @@ install_miniforge:
 
 install_yolo_world: install_miniforge
 	@Makefile.scripts/install_yolo_world.sh
+
+lint:
+	@ruff check
+	@ruff format --diff
+
+format:
+	@ruff check --fix
+	@ruff format
