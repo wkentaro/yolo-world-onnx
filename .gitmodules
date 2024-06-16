@@ -1,0 +1,3 @@
+[submodule "src/YOLO-World"]
+	path = src/YOLO-World
+	url = https://github.com/AILab-CVC/YOLO-World.git
