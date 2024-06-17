@@ -5,7 +5,6 @@ import sys
 from typing import Tuple
 
 import imgviz
-import imshow
 import numpy as np
 import torch
 import torchvision
@@ -184,10 +183,7 @@ def main():
         font_size=15,
         line_width=1,
     )
-    imshow.imshow(
-        [viz],
-        get_title_from_item=lambda x: f"shape={x.shape}, mean={x.mean(axis=(0, 1)).astype(int).tolist()}",  # noqa: E501
-    )
+    imgviz.io.pil_imshow(viz)
 
 
 if __name__ == "__main__":
