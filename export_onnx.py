@@ -54,7 +54,10 @@ def main():
         onnx.checker.check_model(onnx_model)
 
     onnxsim.simplify(onnx_model)
-    onnx_file = "yolo_world_v2_xl_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.onnx"  # noqa: E501
+    onnx_file = os.path.join(
+        here,
+        "checkpoints/yolo_world_v2_xl_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.onnx",  # noqa: E501,
+    )
     onnx.save(onnx_model, onnx_file)
     logger.info("ONNX model saved to {!r}.", onnx_file)
 

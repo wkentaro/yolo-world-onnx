@@ -17,7 +17,10 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 
 def main():
-    onnx_file = "yolo_world_v2_xl_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.onnx"  # noqa: E501
+    onnx_file = os.path.join(
+        here,
+        "checkpoints/yolo_world_v2_xl_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.onnx",  # noqa: E501
+    )
     image_size = 640
 
     yolo_world_session = onnxruntime.InferenceSession(path_or_bytes=onnx_file)
