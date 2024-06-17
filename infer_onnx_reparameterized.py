@@ -2,7 +2,6 @@
 
 import os
 
-import cv2
 import imgviz
 import imshow
 import onnxruntime
@@ -27,7 +26,7 @@ def main():
 
     inference_session = onnxruntime.InferenceSession(path_or_bytes=onnx_file)
 
-    image = cv2.imread("src/YOLO-World/demo/sample_images/bus.jpg")[:, :, ::-1]
+    image = imgviz.io.imread("src/YOLO-World/demo/sample_images/bus.jpg")
 
     input_image, original_image_hw, padding_hw = transform_image(
         image=image, image_size=image_size
