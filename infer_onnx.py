@@ -13,7 +13,6 @@ from infer_pytorch import postprocess_detections
 from infer_pytorch import transform_image
 from infer_pytorch import untransform_bboxes
 
-
 here = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -32,13 +31,9 @@ def main():
     class_names = "person,bicycle,car,motorcycle,airplane,bus,train,truck,boat,traffic light,fire hydrant,stop sign,parking meter,bench,bird,cat,dog,horse,sheep,cow,elephant,bear,zebra,giraffe,backpack,umbrella,handbag,tie,suitcase,frisbee,skis,snowboard,sports ball,kite,baseball bat,baseball glove,skateboard,surfboard,tennis racket,bottle,wine glass,cup,fork,knife,spoon,bowl,banana,apple,sandwich,orange,broccoli,carrot,hot dog,pizza,donut,cake,chair,couch,potted plant,bed,dining table,toilet,tv,laptop,mouse,remote,keyboard,cell phone,microwave,oven,toaster,sink,refrigerator,book,clock,vase,scissors,teddy bear,hair drier,toothbrush"  # noqa: E501
     class_names = class_names.split(",")
 
-    token = (
-        clip.tokenize(class_names + [" "])
-        .numpy()
-        .astype(int)
-    )
+    token = clip.tokenize(class_names + [" "]).numpy().astype(int)
     textual_session = onnxruntime.InferenceSession(os.path.join(here, "textual.onnx"))
-    text_feats, = textual_session.run(None, {"input": token})
+    (text_feats,) = textual_session.run(None, {"input": token})
     text_feats = torch.from_numpy(text_feats)
     text_feats = text_feats / text_feats.norm(p=2, dim=-1, keepdim=True)
 
