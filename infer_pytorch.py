@@ -4,7 +4,6 @@ import os
 import sys
 from typing import Tuple
 
-import cv2
 import imgviz
 import imshow
 import numpy as np
@@ -24,12 +23,16 @@ def load_model(deploy_model_cls=None) -> Tuple[torch.nn.Module, int]:
     if deploy_model_cls is None:
         deploy_model_cls = easydeploy.model.DeployModel
 
-    config = "configs/pretrain/yolo_world_v2_xl_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.py"  # noqa: E501
-    checkpoint = "yolo_world_v2_xl_obj365v1_goldg_cc3mlite_pretrain-5daf1395.pth"
+    config = os.path.join(
+        here,
+        "src/YOLO-World/configs/pretrain/yolo_world_v2_xl_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.py",  # noqa: E501
+    )
+    checkpoint = os.path.join(
+        here,
+        "checkpoints/yolo_world_v2_xl_obj365v1_goldg_cc3mlite_pretrain-5daf1395.pth",
+    )
     logger.info("Loading model: config={!r}, checkpoint={!r}", config, checkpoint)
-    os.chdir(os.path.join(here, "src/YOLO-World"))
     base_model = init_detector(config=config, checkpoint=checkpoint, device="cpu")
-    os.chdir(here)
 
     model = deploy_model_cls(
         baseModel=base_model,
@@ -95,10 +98,11 @@ def transform_image(
     height, width = image.shape[:2]
 
     scale = image_size / max(height, width)
-    image_resized = cv2.resize(
+    image_resized = imgviz.resize(
         image,
-        dsize=(int(width * scale), int(height * scale)),
-        interpolation=cv2.INTER_AREA,
+        height=int(height * scale),
+        width=int(width * scale),
+        interpolation="linear",
     )
     pad_height = image_size - image_resized.shape[0]
     pad_width = image_size - image_resized.shape[1]
@@ -135,7 +139,9 @@ def untransform_bboxes(
 def main():
     model, image_size = load_model()
 
-    image = cv2.imread("src/YOLO-World/demo/sample_images/bus.jpg")[:, :, ::-1]
+    image = imgviz.io.imread(
+        os.path.join(here, "src/YOLO-World/demo/sample_images/bus.jpg")
+    )
 
     class_names = "person,bicycle,car,motorcycle,airplane,bus,train,truck,boat,traffic light,fire hydrant,stop sign,parking meter,bench,bird,cat,dog,horse,sheep,cow,elephant,bear,zebra,giraffe,backpack,umbrella,handbag,tie,suitcase,frisbee,skis,snowboard,sports ball,kite,baseball bat,baseball glove,skateboard,surfboard,tennis racket,bottle,wine glass,cup,fork,knife,spoon,bowl,banana,apple,sandwich,orange,broccoli,carrot,hot dog,pizza,donut,cake,chair,couch,potted plant,bed,dining table,toilet,tv,laptop,mouse,remote,keyboard,cell phone,microwave,oven,toaster,sink,refrigerator,book,clock,vase,scissors,teddy bear,hair drier,toothbrush"  # noqa: E501
     class_names = class_names.split(",")
