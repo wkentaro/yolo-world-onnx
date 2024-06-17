@@ -9,6 +9,9 @@ install_miniforge:
 install_yolo_world: install_miniforge
 	@Makefile.scripts/install_yolo_world.sh
 
+install: install_yolo_world
+	@Makefile.scripts/install.sh
+
 lint:
 	ruff check
 	ruff format --diff
