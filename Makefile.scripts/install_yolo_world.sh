@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
-log_info () {
+log_info() {
   echo -e "\033[1m$(basename $0):$LINENO - $1\033[0m"
 }
-log_error () {
+log_error() {
   echo -e "\033[31m$(basename $0):$LINENO - $1\033[0m"
 }
 
