@@ -55,9 +55,9 @@ def load_model(deploy_model_cls=None) -> Tuple[torch.nn.Module, int]:
     return model, image_size
 
 
-def non_maximum_suppression(
-    ori_bboxes: torch.Tensor,
-    ori_scores: torch.Tensor,
+def non_maximum_suppression_pytorch(
+    boxes: torch.Tensor,
+    scores: torch.Tensor,
     iou_threshold: float,
     score_threshold: float,
     max_num_detections: int,
@@ -65,13 +65,11 @@ def non_maximum_suppression(
     scores_list = []
     labels_list = []
     bboxes_list = []
-    for cls_id in range(ori_scores.shape[1]):
-        cls_scores = ori_scores[:, cls_id]
+    for cls_id in range(scores.shape[1]):
+        cls_scores = scores[:, cls_id]
         labels = torch.ones(cls_scores.shape[0], dtype=torch.long) * cls_id
-        keep_idxs = torchvision.ops.nms(
-            ori_bboxes, cls_scores, iou_threshold=iou_threshold
-        )
-        cur_bboxes = ori_bboxes[keep_idxs]
+        keep_idxs = torchvision.ops.nms(boxes, cls_scores, iou_threshold=iou_threshold)
+        cur_bboxes = boxes[keep_idxs]
         cls_scores = cls_scores[keep_idxs]
         labels = labels[keep_idxs]
         scores_list.append(cls_scores)
@@ -115,12 +113,12 @@ def main():
         scores, bboxes = model(inputs=torch.Tensor(input_image[None]))
         scores = scores[0]
         bboxes = bboxes[0]
-    bboxes, scores, labels = non_maximum_suppression(
-        ori_bboxes=bboxes,
-        ori_scores=scores,
-        nms_thr=0.7,
-        score_thr=0.1,
-        max_dets=100,
+    bboxes, scores, labels = non_maximum_suppression_pytorch(
+        boxes=bboxes,
+        scores=scores,
+        iou_threshold=0.7,
+        score_threshold=0.1,
+        max_num_detections=100,
     )
     bboxes = untransform_bboxes(
         bboxes=bboxes,
