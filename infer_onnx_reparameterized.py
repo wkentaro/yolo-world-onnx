@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import os
+from typing import Tuple
 
 import imgviz
+import numpy as np
 import onnxruntime
-import torch
 
 from infer_pytorch import get_coco_class_names
-from infer_pytorch import postprocess_detections
 from infer_pytorch import transform_image
 from infer_pytorch import untransform_bboxes
 
@@ -22,6 +22,42 @@ def load_model():
     inference_session = onnxruntime.InferenceSession(path_or_bytes=onnx_file)
     image_size = 640
     return inference_session, image_size
+
+
+def non_maximum_suppression(
+    boxes: np.ndarray,
+    scores: np.ndarray,
+    iou_threshold: float,
+    score_threshold: float,
+    max_num_detections: int,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    onnx_file = os.path.join(here, "checkpoints/nms.onnx")
+    inference_session = onnxruntime.InferenceSession(path_or_bytes=onnx_file)
+
+    selected_indices = inference_session.run(
+        output_names=["selected_indices"],
+        input_feed={
+            "boxes": boxes[None, :, :],
+            "scores": scores[None, :, :].transpose(0, 2, 1),
+            "max_output_boxes_per_class": np.array(
+                [max_num_detections], dtype=np.int64
+            ),
+            "iou_threshold": np.array([iou_threshold], dtype=np.float32),
+            "score_threshold": np.array([score_threshold], dtype=np.float32),
+        },
+    )[0]
+    labels = selected_indices[:, 1]
+    box_indices = selected_indices[:, 2]
+    boxes = boxes[box_indices]
+    scores = scores[box_indices, labels]
+
+    if len(boxes) > max_num_detections:
+        keep_indices = np.argsort(scores)[-max_num_detections:]
+        boxes = boxes[keep_indices]
+        scores = scores[keep_indices]
+        labels = labels[keep_indices]
+
+    return boxes, scores, labels
 
 
 def main():
@@ -43,12 +79,12 @@ def main():
     scores = scores[0]
     bboxes = bboxes[0]
     #
-    bboxes, scores, labels = postprocess_detections(
-        ori_bboxes=torch.from_numpy(bboxes),
-        ori_scores=torch.from_numpy(scores),
-        nms_thr=0.7,
-        score_thr=0.1,
-        max_dets=100,
+    bboxes, scores, labels = non_maximum_suppression(
+        boxes=bboxes,
+        scores=scores,
+        iou_threshold=0.7,
+        score_threshold=0.1,
+        max_num_detections=100,
     )
     bboxes = untransform_bboxes(
         bboxes=bboxes,
