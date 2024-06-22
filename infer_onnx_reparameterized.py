@@ -7,9 +7,7 @@ import imgviz
 import numpy as np
 import onnxruntime
 
-from _shared import get_coco_class_names
-from _shared import transform_image
-from _shared import untransform_bboxes
+import _shared
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -61,14 +59,15 @@ def non_maximum_suppression(
 
 
 def main():
-    image = imgviz.io.imread(
-        os.path.join(here, "src/YOLO-World/demo/sample_images/bus.jpg")
-    )
-    class_names = get_coco_class_names()
+    parser = _shared.get_argument_parser(class_names=False)
+    args = parser.parse_args()
+
+    image = imgviz.io.imread(args.image_file)
 
     inference_session, image_size = load_model()
+    class_names = _shared.get_coco_class_names()
 
-    input_image, original_image_hw, padding_hw = transform_image(
+    input_image, original_image_hw, padding_hw = _shared.transform_image(
         image=image, image_size=image_size
     )
     #
@@ -82,11 +81,11 @@ def main():
     bboxes, scores, labels = non_maximum_suppression(
         boxes=bboxes,
         scores=scores,
-        iou_threshold=0.7,
-        score_threshold=0.1,
-        max_num_detections=100,
+        iou_threshold=args.iou_threshold,
+        score_threshold=args.score_threshold,
+        max_num_detections=args.max_num_detections,
     )
-    bboxes = untransform_bboxes(
+    bboxes = _shared.untransform_bboxes(
         bboxes=bboxes,
         image_size=image_size,
         original_image_hw=original_image_hw,
