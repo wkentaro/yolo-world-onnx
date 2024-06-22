@@ -7,10 +7,8 @@ import imgviz
 import numpy as np
 import onnxruntime
 
+import _shared
 from infer_onnx_reparameterized import non_maximum_suppression
-from infer_pytorch import get_coco_class_names
-from infer_pytorch import transform_image
-from infer_pytorch import untransform_bboxes
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -26,14 +24,15 @@ def load_model():
 
 
 def main():
-    image = imgviz.io.imread(
-        os.path.join(here, "src/YOLO-World/demo/sample_images/bus.jpg")
-    )
-    class_names = get_coco_class_names()
+    parser = _shared.get_argument_parser()
+    args = parser.parse_args()
+
+    image = imgviz.io.imread(args.image_file)
+    class_names = args.class_names
 
     yolo_world_session, image_size = load_model()
 
-    input_image, original_image_hw, padding_hw = transform_image(
+    input_image, original_image_hw, padding_hw = _shared.transform_image(
         image=image, image_size=image_size
     )
     #
@@ -57,11 +56,11 @@ def main():
     bboxes, scores, labels = non_maximum_suppression(
         boxes=bboxes,
         scores=scores,
-        iou_threshold=0.7,
-        score_threshold=0.1,
-        max_num_detections=100,
+        iou_threshold=args.iou_threshold,
+        score_threshold=args.score_threshold,
+        max_num_detections=args.max_num_detections,
     )
-    bboxes = untransform_bboxes(
+    bboxes = _shared.untransform_bboxes(
         bboxes=bboxes,
         image_size=image_size,
         original_image_hw=original_image_hw,
