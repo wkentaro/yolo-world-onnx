@@ -7,8 +7,8 @@ import imgviz
 import onnxruntime
 import torch
 
+from infer_onnx_reparameterized import non_maximum_suppression
 from infer_pytorch import get_coco_class_names
-from infer_pytorch import postprocess_detections
 from infer_pytorch import transform_image
 from infer_pytorch import untransform_bboxes
 
@@ -55,12 +55,12 @@ def main():
     scores = scores[0]
     bboxes = bboxes[0]
     #
-    bboxes, scores, labels = postprocess_detections(
-        ori_bboxes=torch.from_numpy(bboxes),
-        ori_scores=torch.from_numpy(scores),
-        nms_thr=0.7,
-        score_thr=0.1,
-        max_dets=100,
+    bboxes, scores, labels = non_maximum_suppression(
+        boxes=bboxes.numpy(),
+        cores=scores.numpy(),
+        iou_threshold=0.7,
+        score_threshold=0.1,
+        max_num_detections=100,
     )
     bboxes = untransform_bboxes(
         bboxes=bboxes,
