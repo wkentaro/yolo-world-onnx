@@ -51,39 +51,40 @@ def load_model(deploy_model_cls=None) -> Tuple[torch.nn.Module, int]:
     return model, image_size
 
 
-def postprocess_detections(
+def non_maximum_suppression(
     ori_bboxes: torch.Tensor,
     ori_scores: torch.Tensor,
-    nms_thr: float,
-    score_thr: float,
-    max_dets: int,
+    iou_threshold: float,
+    score_threshold: float,
+    max_num_detections: int,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     scores_list = []
     labels_list = []
     bboxes_list = []
-    # class-specific NMS
     for cls_id in range(ori_scores.shape[1]):
         cls_scores = ori_scores[:, cls_id]
         labels = torch.ones(cls_scores.shape[0], dtype=torch.long) * cls_id
-        keep_idxs = torchvision.ops.nms(ori_bboxes, cls_scores, iou_threshold=nms_thr)
+        keep_idxs = torchvision.ops.nms(
+            ori_bboxes, cls_scores, iou_threshold=iou_threshold
+        )
         cur_bboxes = ori_bboxes[keep_idxs]
         cls_scores = cls_scores[keep_idxs]
         labels = labels[keep_idxs]
         scores_list.append(cls_scores)
         labels_list.append(labels)
         bboxes_list.append(cur_bboxes)
-
     scores = torch.cat(scores_list, dim=0)
     labels = torch.cat(labels_list, dim=0)
     bboxes = torch.cat(bboxes_list, dim=0)
 
-    keep_idxs = scores > score_thr
+    keep_idxs = scores > score_threshold
     scores = scores[keep_idxs]
     labels = labels[keep_idxs]
     bboxes = bboxes[keep_idxs]
-    if len(keep_idxs) > max_dets:
+
+    if len(keep_idxs) > max_num_detections:
         _, sorted_idx = torch.sort(scores, descending=True)
-        keep_idxs = sorted_idx[:max_dets]
+        keep_idxs = sorted_idx[:max_num_detections]
         bboxes = bboxes[keep_idxs]
         scores = scores[keep_idxs]
         labels = labels[keep_idxs]
@@ -126,7 +127,7 @@ def untransform_bboxes(
     image_size: int,
     original_image_hw: Tuple[int, int],
     padding_hw: Tuple[int, int],
-):
+) -> np.ndarray:
     bboxes -= np.array([padding_hw[1] // 2, padding_hw[0] // 2] * 2)
     bboxes /= image_size / max(original_image_hw)
     bboxes[:, 0::2] = np.clip(bboxes[:, 0::2], 0, original_image_hw[1])
@@ -160,7 +161,7 @@ def main():
         scores, bboxes = model(inputs=input_image[None])
         scores = scores[0]
         bboxes = bboxes[0]
-    bboxes, scores, labels = postprocess_detections(
+    bboxes, scores, labels = non_maximum_suppression(
         ori_bboxes=bboxes,
         ori_scores=scores,
         nms_thr=0.7,
