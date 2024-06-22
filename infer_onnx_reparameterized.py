@@ -7,9 +7,9 @@ import imgviz
 import numpy as np
 import onnxruntime
 
-from infer_pytorch import get_coco_class_names
-from infer_pytorch import transform_image
-from infer_pytorch import untransform_bboxes
+from _shared import get_coco_class_names
+from _shared import transform_image
+from _shared import untransform_bboxes
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -31,7 +31,7 @@ def non_maximum_suppression(
     score_threshold: float,
     max_num_detections: int,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    onnx_file = os.path.join(here, "checkpoints/nms.onnx")
+    onnx_file = os.path.join(here, "checkpoints/non_maximum_suppression.onnx")
     inference_session = onnxruntime.InferenceSession(path_or_bytes=onnx_file)
 
     selected_indices = inference_session.run(
@@ -74,7 +74,7 @@ def main():
     #
     scores, bboxes = inference_session.run(
         output_names=["scores", "boxes"],
-        input_feed={"images": input_image.numpy()[None]},
+        input_feed={"images": input_image[None]},
     )
     scores = scores[0]
     bboxes = bboxes[0]
