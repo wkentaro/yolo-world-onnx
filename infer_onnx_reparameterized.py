@@ -91,19 +91,13 @@ def main():
         original_image_hw=original_image_hw,
         padding_hw=padding_hw,
     )
-
-    captions = [
-        f"{class_names[label]}: {score:.2f}" for label, score in zip(labels, scores)
-    ]
-    viz = imgviz.instances2rgb(
+    _shared.visualize_bboxes(
         image=image,
-        bboxes=bboxes[:, [1, 0, 3, 2]],
-        labels=labels + 1,
-        captions=captions,
-        font_size=image.shape[0] // 80,
-        line_width=1,
+        bboxes=bboxes,
+        labels=labels,
+        scores=scores,
+        class_names=class_names,
     )
-    imgviz.io.pil_imshow(viz)
 
 
 if __name__ == "__main__":

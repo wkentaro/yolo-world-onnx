@@ -99,3 +99,26 @@ def untransform_bboxes(
     bboxes[:, 1::2] = np.clip(bboxes[:, 1::2], 0, original_image_hw[0])
     bboxes = bboxes.round().astype(int)
     return bboxes
+
+
+def visualize_bboxes(
+    image: np.ndarray,
+    bboxes: np.ndarray,
+    labels: np.ndarray,
+    scores: np.ndarray,
+    class_names: np.ndarray,
+) -> None:
+    captions = [
+        f"{class_names[label]}: {score:.2f}" for label, score in zip(labels, scores)
+    ]
+    font_size = image.shape[0] // 80
+    line_width = max(1, font_size // 10)
+    viz = imgviz.instances2rgb(
+        image=image,
+        bboxes=bboxes[:, [1, 0, 3, 2]],
+        labels=labels + 1,
+        captions=captions,
+        font_size=font_size,
+        line_width=line_width,
+    )
+    imgviz.io.pil_imshow(viz)
