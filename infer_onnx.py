@@ -4,8 +4,8 @@ import os
 
 import clip
 import imgviz
+import numpy as np
 import onnxruntime
-import torch
 
 from infer_onnx_reparameterized import non_maximum_suppression
 from infer_pytorch import get_coco_class_names
@@ -42,22 +42,21 @@ def main():
         os.path.join(here, "checkpoints/vitb32-textual.onnx")
     )
     (text_feats,) = textual_session.run(None, {"input": token})
-    text_feats = torch.from_numpy(text_feats)
-    text_feats = text_feats / text_feats.norm(p=2, dim=-1, keepdim=True)
+    text_feats = text_feats / np.linalg.norm(text_feats, ord=2, axis=1, keepdims=True)
     #
     scores, bboxes = yolo_world_session.run(
         output_names=["scores", "boxes"],
         input_feed={
-            "images": input_image.numpy()[None],
-            "text_features": text_feats.numpy()[None],
+            "images": input_image[None],
+            "text_features": text_feats[None],
         },
     )
     scores = scores[0]
     bboxes = bboxes[0]
     #
     bboxes, scores, labels = non_maximum_suppression(
-        boxes=bboxes.numpy(),
-        cores=scores.numpy(),
+        boxes=bboxes,
+        scores=scores,
         iou_threshold=0.7,
         score_threshold=0.1,
         max_num_detections=100,
