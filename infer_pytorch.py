@@ -12,6 +12,10 @@ from loguru import logger
 from mmdet.apis import init_detector
 from mmengine.config import ConfigDict
 
+from _shared import get_coco_class_names
+from _shared import transform_image
+from _shared import untransform_bboxes
+
 here = os.path.dirname(os.path.abspath(__file__))
 
 sys.path.insert(0, os.path.join(here, "src/YOLO-World/deploy"))
@@ -92,56 +96,6 @@ def non_maximum_suppression(
     return bboxes.cpu().numpy(), scores.cpu().numpy(), labels.cpu().numpy()
 
 
-def transform_image(
-    image: np.ndarray, image_size: int
-) -> Tuple[torch.Tensor, Tuple[int, int], Tuple[int, int]]:
-    height, width = image.shape[:2]
-
-    scale = image_size / max(height, width)
-    image_resized = imgviz.resize(
-        image,
-        height=int(height * scale),
-        width=int(width * scale),
-        interpolation="linear",
-    )
-    pad_height = image_size - image_resized.shape[0]
-    pad_width = image_size - image_resized.shape[1]
-    image_resized = np.pad(
-        image_resized,
-        (
-            (pad_height // 2, pad_height - pad_height // 2),
-            (pad_width // 2, pad_width - pad_width // 2),
-            (0, 0),
-        ),
-        mode="constant",
-        constant_values=114,
-    )
-    input_image = torch.tensor(
-        image_resized.transpose(2, 0, 1).astype(np.float32) / 255.0
-    )
-    return input_image, (height, width), (pad_height, pad_width)
-
-
-def untransform_bboxes(
-    bboxes: np.ndarray,
-    image_size: int,
-    original_image_hw: Tuple[int, int],
-    padding_hw: Tuple[int, int],
-) -> np.ndarray:
-    bboxes -= np.array([padding_hw[1] // 2, padding_hw[0] // 2] * 2)
-    bboxes /= image_size / max(original_image_hw)
-    bboxes[:, 0::2] = np.clip(bboxes[:, 0::2], 0, original_image_hw[1])
-    bboxes[:, 1::2] = np.clip(bboxes[:, 1::2], 0, original_image_hw[0])
-    bboxes = bboxes.round().astype(int)
-    return bboxes
-
-
-def get_coco_class_names():
-    class_names = "person,bicycle,car,motorcycle,airplane,bus,train,truck,boat,traffic light,fire hydrant,stop sign,parking meter,bench,bird,cat,dog,horse,sheep,cow,elephant,bear,zebra,giraffe,backpack,umbrella,handbag,tie,suitcase,frisbee,skis,snowboard,sports ball,kite,baseball bat,baseball glove,skateboard,surfboard,tennis racket,bottle,wine glass,cup,fork,knife,spoon,bowl,banana,apple,sandwich,orange,broccoli,carrot,hot dog,pizza,donut,cake,chair,couch,potted plant,bed,dining table,toilet,tv,laptop,mouse,remote,keyboard,cell phone,microwave,oven,toaster,sink,refrigerator,book,clock,vase,scissors,teddy bear,hair drier,toothbrush"  # noqa: E501
-    class_names = class_names.split(",")
-    return class_names
-
-
 def main():
     image = imgviz.io.imread(
         os.path.join(here, "src/YOLO-World/demo/sample_images/bus.jpg")
@@ -158,7 +112,7 @@ def main():
         image=image, image_size=image_size
     )
     with torch.no_grad():
-        scores, bboxes = model(inputs=input_image[None])
+        scores, bboxes = model(inputs=torch.Tensor(input_image[None]))
         scores = scores[0]
         bboxes = bboxes[0]
     bboxes, scores, labels = non_maximum_suppression(
