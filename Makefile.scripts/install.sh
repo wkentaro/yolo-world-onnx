@@ -28,3 +28,8 @@ url=https://huggingface.co/GLIPModel/GLIP/resolve/main/lvis_v1_minival_inserted_
 path=data/coco/lvis/$(basename $url)
 sha256=02301f6ccd89d1ee3d35112cb57d000c3396f34e4073066c90b2c1fbf47b55ce
 cached_download $url $path $sha256
+
+url=https://clip-as-service.s3.us-east-2.amazonaws.com/models/onnx/ViT-B-32/textual.onnx
+path=checkpoints/vitb32-textual.onnx
+sha256=55c85d8cbb096023781c1d13c557eb95d26034c111bd001b7360fdb7399eec68
+cached_download $url $path $sha256

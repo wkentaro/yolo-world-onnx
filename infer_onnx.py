@@ -38,7 +38,9 @@ def main():
     )
     #
     token = clip.tokenize(class_names + [" "]).numpy().astype(int)
-    textual_session = onnxruntime.InferenceSession(os.path.join(here, "textual.onnx"))
+    textual_session = onnxruntime.InferenceSession(
+        os.path.join(here, "checkpoints/vitb32-textual.onnx")
+    )
     (text_feats,) = textual_session.run(None, {"input": token})
     text_feats = torch.from_numpy(text_feats)
     text_feats = text_feats / text_feats.norm(p=2, dim=-1, keepdim=True)
