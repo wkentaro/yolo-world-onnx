@@ -100,7 +100,7 @@ def main():
         bboxes=bboxes[:, [1, 0, 3, 2]],
         labels=labels + 1,
         captions=captions,
-        font_size=15,
+        font_size=image.shape[0] // 80,
         line_width=1,
     )
     imgviz.io.pil_imshow(viz)
