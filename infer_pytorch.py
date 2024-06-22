@@ -12,9 +12,7 @@ from loguru import logger
 from mmdet.apis import init_detector
 from mmengine.config import ConfigDict
 
-from _shared import get_coco_class_names
-from _shared import transform_image
-from _shared import untransform_bboxes
+import _shared
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -95,10 +93,11 @@ def non_maximum_suppression_pytorch(
 
 
 def main():
-    image = imgviz.io.imread(
-        os.path.join(here, "src/YOLO-World/demo/sample_images/bus.jpg")
-    )
-    class_names = get_coco_class_names()
+    parser = _shared.get_argument_parser()
+    args = parser.parse_args()
+
+    image = imgviz.io.imread(args.image_file)
+    class_names = args.class_names
 
     model, image_size = load_model()
     model.baseModel.reparameterize(
@@ -106,7 +105,7 @@ def main():
     )
     model.baseModel.text_feats = model.baseModel.text_feats.permute(1, 0, 2)
 
-    input_image, original_image_hw, padding_hw = transform_image(
+    input_image, original_image_hw, padding_hw = _shared.transform_image(
         image=image, image_size=image_size
     )
     with torch.no_grad():
@@ -116,11 +115,11 @@ def main():
     bboxes, scores, labels = non_maximum_suppression_pytorch(
         boxes=bboxes,
         scores=scores,
-        iou_threshold=0.7,
-        score_threshold=0.1,
-        max_num_detections=100,
+        iou_threshold=args.iou_threshold,
+        score_threshold=args.score_threshold,
+        max_num_detections=args.max_num_detections,
     )
-    bboxes = untransform_bboxes(
+    bboxes = _shared.untransform_bboxes(
         bboxes=bboxes,
         image_size=image_size,
         original_image_hw=original_image_hw,

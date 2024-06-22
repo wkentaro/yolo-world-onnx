@@ -1,8 +1,56 @@
+import argparse
+import os
 from typing import List
 from typing import Tuple
 
 import imgviz
 import numpy as np
+
+here = os.path.dirname(os.path.abspath(__file__))
+
+
+def get_argument_parser(class_names=True) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--image-file",
+        type=str,
+        default=os.path.join(here, "src/YOLO-World/demo/sample_images/bus.jpg"),
+        help="image file",
+    )
+
+    if class_names:
+
+        def comma_separated_string(value):
+            return value.split(",")
+
+        parser.add_argument(
+            "--class-names",
+            type=comma_separated_string,
+            default=get_coco_class_names(),
+            help="class names",
+        )
+
+    parser.add_argument(
+        "--iou-threshold",
+        type=float,
+        default=0.7,
+        help="IoU threshold",
+    )
+    parser.add_argument(
+        "--score-threshold",
+        type=float,
+        default=0.1,
+        help="score threshold",
+    )
+    parser.add_argument(
+        "--max-num-detections",
+        type=int,
+        default=100,
+        help="maximum number of detections",
+    )
+    return parser
 
 
 def get_coco_class_names() -> List[str]:
