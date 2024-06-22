@@ -8,6 +8,7 @@ import onnxsim
 import torch
 from loguru import logger
 
+from _shared import get_coco_class_names
 from infer_pytorch import load_model
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -15,11 +16,9 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 def main():
     model, image_size = load_model()
+    class_names = get_coco_class_names()
 
     fake_images = torch.randn(1, 3, image_size, image_size)
-
-    class_names = "person,bicycle,car,motorcycle,airplane,bus,train,truck,boat,traffic light,fire hydrant,stop sign,parking meter,bench,bird,cat,dog,horse,sheep,cow,elephant,bear,zebra,giraffe,backpack,umbrella,handbag,tie,suitcase,frisbee,skis,snowboard,sports ball,kite,baseball bat,baseball glove,skateboard,surfboard,tennis racket,bottle,wine glass,cup,fork,knife,spoon,bowl,banana,apple,sandwich,orange,broccoli,carrot,hot dog,pizza,donut,cake,chair,couch,potted plant,bed,dining table,toilet,tv,laptop,mouse,remote,keyboard,cell phone,microwave,oven,toaster,sink,refrigerator,book,clock,vase,scissors,teddy bear,hair drier,toothbrush"  # noqa: E501
-    class_names = class_names.split(",")
 
     logger.info("Reparameterizing model.")
     model.baseModel.reparameterize(
