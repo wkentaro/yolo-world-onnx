@@ -47,6 +47,12 @@ def main():
             f,
             input_names=["images", "text_features"],
             output_names=["scores", "boxes"],
+            dynamic_axes={
+                "images": {0: "batch"},
+                "text_features": {0: "batch", 1: "classes"},
+                "scores": {0: "batch", 2: "classes"},
+                "boxes": {0: "batch"},
+            },
             opset_version=12,
         )
         f.seek(0)
