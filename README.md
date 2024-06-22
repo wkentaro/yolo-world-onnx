@@ -8,7 +8,7 @@
 <br/>
 
 <div align="center">
-    <img src="README.md.files/teaser.jpg" height="300px" />
+    <img src="README.md.files/teaser.jpg" width="75%" />
 </div>
 
 ## ONNX Models
