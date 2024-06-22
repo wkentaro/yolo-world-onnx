@@ -60,6 +60,12 @@ Run inference using the exported ONNX model:
                 --score-threshold 0.09
 ```
 
+## Acknowledgements
+
+YOLO-World is an open-vocabulary object detection model published in CVPR2024.
+
+Check out the following resources for more information: [Paper](https://arxiv.org/abs/2401.17270), [Code](https://github.com/AILab-CVC/YOLO-World)
+
 ## License
 
 GPLv3
