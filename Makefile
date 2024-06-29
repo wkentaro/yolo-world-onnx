@@ -14,6 +14,9 @@ install_checkpoints:
 
 install: install_yolo_world install_checkpoints
 
+install_for_onnx: install_miniforge install_checkpoints
+	@.conda/bin/pip install imgviz loguru onnxruntime
+
 lint:
 	ruff check
 	ruff format --diff

@@ -17,10 +17,16 @@
 
 ## Installation
 
-Install dependencies and downloads the pre-trained model checkpoints:
+Option 1: Install all for PyTorch inference, export, and ONNX inference:
 
 ```
 make install
+```
+
+Option 2: Install only for ONNX inference:
+
+```
+make install_for_onnx
 ```
 
 ## Usage
