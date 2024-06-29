@@ -2,12 +2,12 @@
 
 import os
 
-import clip
 import imgviz
 import numpy as np
 import onnxruntime
 
 import _shared
+from _shared import clip
 from infer_onnx_reparameterized import non_maximum_suppression
 
 here = os.path.dirname(os.path.abspath(__file__))
@@ -18,6 +18,11 @@ def load_model():
         here,
         "checkpoints/yolo_world_v2_xl_vlpan_bn_2e-3_100e_4x8gpus_obj365v1_goldg_train_lvis_minival.onnx",  # noqa: E501
     )
+    if not os.path.exists(onnx_file):
+        raise FileNotFoundError(
+            f"File not found: {onnx_file}, download it from "
+            "https://github.com/wkentaro/yolo-world-onnx/releases/latest"
+        )
     inference_session = onnxruntime.InferenceSession(path_or_bytes=onnx_file)
     image_size = 640
     return inference_session, image_size
@@ -36,7 +41,7 @@ def main():
         image=image, image_size=image_size
     )
     #
-    token = clip.tokenize(class_names + [" "]).numpy().astype(int)
+    token = clip.tokenize(class_names + [" "])
     textual_session = onnxruntime.InferenceSession(
         os.path.join(here, "checkpoints/vitb32-textual.onnx")
     )
