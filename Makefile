@@ -9,8 +9,10 @@ install_miniforge:
 install_yolo_world: install_miniforge
 	@Makefile.scripts/install_yolo_world.sh
 
-install: install_yolo_world
-	@Makefile.scripts/install.sh
+install_checkpoints:
+	@Makefile.scripts/install_checkpoints.sh
+
+install: install_yolo_world install_checkpoints
 
 lint:
 	ruff check
