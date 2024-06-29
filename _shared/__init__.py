@@ -16,7 +16,7 @@ def get_argument_parser(class_names=True) -> argparse.ArgumentParser:
     parser.add_argument(
         "--image-file",
         type=str,
-        default=os.path.join(here, "src/YOLO-World/demo/sample_images/bus.jpg"),
+        default=os.path.join(here, "../src/YOLO-World/demo/sample_images/bus.jpg"),
         help="image file",
     )
 
