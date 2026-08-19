@@ -13,7 +13,9 @@
 
 ## ONNX Models
 
-[Download](https://github.com/wkentaro/yolo-world-onnx/releases/latest)
+[Download](https://github.com/wkentaro/yolo-world-onnx/releases/latest). See
+[ARTIFACTS.md](ARTIFACTS.md) for checksums, corresponding source, and export
+inputs for each release artifact.
 
 ## Installation
 
@@ -74,4 +76,7 @@ Check out the following resources for more information: [Paper](https://arxiv.or
 
 ## License
 
-GPLv3
+The source code and ONNX release artifacts are distributed under the GNU
+General Public License v3.0. See [LICENSE](LICENSE). Third-party source and
+model inputs retain their respective copyright notices and license terms; see
+[ARTIFACTS.md](ARTIFACTS.md) for their exact revisions and origins.
